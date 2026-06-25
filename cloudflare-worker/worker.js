@@ -51,6 +51,7 @@ export default {
         ],
         temperature: 0.7,
         max_tokens: 1500,
+        reasoning_format: 'hidden',
       }),
     });
 
@@ -60,7 +61,9 @@ export default {
     }
 
     const data = await groqRes.json();
-    const text = data?.choices?.[0]?.message?.content || '';
+    let text = data?.choices?.[0]?.message?.content || '';
+    // Strip reasoning model <think>...</think> blocks.
+    text = text.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
     return json({ text }, 200, cors);
   },
 };

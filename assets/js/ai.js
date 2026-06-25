@@ -4,7 +4,7 @@
 // server-side. Set the proxy URL below after you deploy the worker.
 //
 // Example: window.JYOTISH_AI_ENDPOINT = 'https://jyotish-ai.<you>.workers.dev';
-window.JYOTISH_AI_ENDPOINT = window.JYOTISH_AI_ENDPOINT || '';
+window.JYOTISH_AI_ENDPOINT = window.JYOTISH_AI_ENDPOINT || 'https://jyotish-ai.mumukshtayal29.workers.dev';
 
 // Model id as shown on the Groq Cloud console.
 window.JYOTISH_AI_MODEL = window.JYOTISH_AI_MODEL || 'qwen/qwen3.6-27b';
@@ -12,6 +12,7 @@ window.JYOTISH_AI_MODEL = window.JYOTISH_AI_MODEL || 'qwen/qwen3.6-27b';
 (function () {
   function stripMarkdown(text) {
     return String(text || '')
+      .replace(/<think>[\s\S]*?<\/think>/gi, '')
       .replace(/^#{1,6}\s+/gm, '')
       .replace(/\*\*(.*?)\*\*/g, '$1')
       .replace(/\*(.*?)\*/g, '$1')
