@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Premium Services - Jyotish Sarathi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Merriweather:wght@700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/styles.css?v=12"/></head><body>
+<canvas id="bgStars" aria-hidden="true"></canvas>
+<div class="aurora-layer" aria-hidden="true"></div>
+<header class="site-header"><div class="container nav-wrap">
+<a href="index.html" class="logo">🕉 Jyotish<span>Sarathi</span></a>
+<button class="nav-toggle">☰</button>
+<nav class="nav">
+<a href="index.html">Home</a>
+      <a href="tools.html">Tools</a>
+<a href="premium.html" class="active">Premium</a><a href="about.html">About</a><a href="contact.html">Contact</a>
+</nav></div></header>
+
+<section class="page-head"><div class="container">
+<h1>Premium Astrology Consultations</h1>
+<p>One-on-one personalised guidance by experienced Vedic astrologers.</p></div></section>
+
+<section class="section"><div class="container">
+<div class="grid-3 pricing">
+  <div class="card price-card">
+    <h3>Basic</h3><div class="price">₹499</div>
+    <ul><li>15-min chat consultation</li><li>1 question</li><li>Quick remedy</li></ul>
+    <button class="btn btn-outline" data-plan="Basic" data-amount="499">Book Basic</button>
+  </div>
+  <div class="card price-card featured">
+    <h3>Standard ⭐</h3><div class="price">₹1,499</div>
+    <ul><li>30-min call consultation</li><li>Up to 3 questions</li><li>Personal remedies</li><li>PDF report</li></ul>
+    <button class="btn btn-primary" data-plan="Standard" data-amount="1499">Book Standard</button>
+  </div>
+  <div class="card price-card">
+    <h3>Premium</h3><div class="price">₹2,999</div>
+    <ul><li>60-min video consultation</li><li>Unlimited questions</li><li>Detailed life report</li><li>30-day follow-up</li></ul>
+    <button class="btn btn-outline" data-plan="Premium" data-amount="2999">Book Premium</button>
+  </div>
+</div>
+
+<h2 class="section-title" style="margin-top:60px">Specialised Premium Reports</h2>
+<div class="grid-3">
+  <div class="card"><h3>Career Report</h3><p>₹999 · 15-page detailed PDF</p><button class="btn btn-outline" data-plan="Career Report" data-amount="999">Buy</button></div>
+  <div class="card"><h3>Marriage Report</h3><p>₹1,299 · Compatibility & timing</p><button class="btn btn-outline" data-plan="Marriage Report" data-amount="1299">Buy</button></div>
+  <div class="card"><h3>Finance Report</h3><p>₹1,199 · Wealth & investments</p><button class="btn btn-outline" data-plan="Finance Report" data-amount="1199">Buy</button></div>
+  <div class="card"><h3>Health Report</h3><p>₹999 · Vedic health analysis</p><button class="btn btn-outline" data-plan="Health Report" data-amount="999">Buy</button></div>
+  <div class="card"><h3>Child Astrology</h3><p>₹1,499 · Future of your child</p><button class="btn btn-outline" data-plan="Child Astrology" data-amount="1499">Buy</button></div>
+  <div class="card"><h3>Yearly Personal Forecast</h3><p>₹1,999 · 12-month roadmap</p><button class="btn btn-outline" data-plan="Yearly Forecast" data-amount="1999">Buy</button></div>
+</div>
+</div></section>
+
+<section class="section alt"><div class="container">
+<h2 class="section-title">Book Your Consultation</h2>
+<form id="bookingForm" class="booking-form">
+  <input type="text" name="name" placeholder="Your Name" required/>
+  <input type="email" name="email" placeholder="Email" required/>
+  <input type="tel" name="phone" placeholder="Phone (WhatsApp)" required/>
+  <input type="date" name="dob" required/>
+  <input type="time" name="tob" required/>
+  <input type="text" name="pob" placeholder="Place of Birth" required/>
+  <select name="plan" id="planSelect" required>
+    <option value="">Select Plan</option>
+    <option>Basic - ₹499</option>
+    <option>Standard - ₹1499</option>
+    <option>Premium - ₹2999</option>
+  </select>
+  <textarea name="question" placeholder="Your concern / question" rows="4"></textarea>
+  <button type="submit" class="btn btn-primary">Proceed to Pay</button>
+</form>
+<p class="muted small-text">Payments are processed securely. (Integrate Razorpay/Stripe for live payments.)</p>
+</div></section>
+
+<footer class="site-footer"><p class="copy">© <span id="yr"></span> Jyotish Sarathi</p></footer>
+<script src="assets/js/main.js"></script>
+<script type="module" src="assets/js/divine-bg.js"></script>
+</body></html>

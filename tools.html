@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>All Tools - Jyotish Sarathi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Merriweather:wght@700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/styles.css?v=12"/>
+<style>
+  .tool-search-wrap { max-width:520px; margin:0 auto 28px; }
+  #toolFinder { width:100%; padding:13px 16px; font-size:.95rem; }
+  .tool-card h3 { margin:0 0 8px; color:#ffc878; }
+  .tool-card p { margin:0; font-size:.88rem; color:rgba(226,216,204,.75); }
+</style>
+</head>
+<body>
+<canvas id="bgStars" aria-hidden="true"></canvas>
+<div class="aurora-layer" aria-hidden="true"></div>
+<header class="site-header"><div class="container nav-wrap">
+  <a href="index.html" class="logo">🕉 Jyotish<span>Sarathi</span></a>
+  <button class="nav-toggle">☰</button>
+  <nav class="nav">
+    <a href="index.html">Home</a>
+    <a href="tools.html" class="active">Tools</a>
+    <a href="panchang.html">Planets</a>
+    <a href="about.html">About</a>
+    <a href="contact.html">Contact</a>
+  </nav>
+</div></header>
+
+<section class="page-head"><div class="container">
+  <h1>All Jyotish Tools</h1>
+  <p>Every calculator and analysis module in one place. Search to jump straight to what you need.</p>
+</div></section>
+
+<section class="section"><div class="container">
+  <div class="tool-search-wrap">
+    <input id="toolFinder" type="search" placeholder="Search tools like matching, dosha, transit, muhurat..." aria-label="Search tools"/>
+  </div>
+
+  <div class="grid-3 tool-grid">
+    <a class="card tool-card" href="panchang.html" data-tool-card data-keywords="janam kundli birth chart planets panchang d1 d9 report">
+      <h3>Janma Kundli &amp; Panchang</h3>
+      <p>Detailed planetary positions, panchang, charts and printable report.</p>
+    </a>
+    <a class="card tool-card" href="kundli-matching.html" data-tool-card data-keywords="kundli matching guna milan marriage compatibility ashtakoota">
+      <h3>Kundli Matching</h3>
+      <p>Ashtakoota score, Mangal check and compatibility summary for two charts.</p>
+    </a>
+    <a class="card tool-card" href="yoga-dosha.html" data-tool-card data-keywords="yoga dosha manglik kaal sarp gajakesari budhaditya">
+      <h3>Yoga &amp; Dosha Engine</h3>
+      <p>Detect major yogas and doshas with easy-to-read interpretation and remedies.</p>
+    </a>
+    <a class="card tool-card" href="transit-analysis.html" data-tool-card data-keywords="transit gochar saturn jupiter sade sati rahu">
+      <h3>Transit Analysis</h3>
+      <p>Check current planetary transits against your natal chart with highlights.</p>
+    </a>
+    <a class="card tool-card" href="muhurat-finder.html" data-tool-card data-keywords="muhurat shubh lagna marriage griha pravesh auspicious time">
+      <h3>Muhurat Finder</h3>
+      <p>Find practical auspicious windows for key tasks by date and location.</p>
+    </a>
+    <a class="card tool-card" href="premium.html" data-tool-card data-keywords="premium consultation astrologer booking report">
+      <h3>Premium Consultation</h3>
+      <p>Book a personal session with an expert astrologer for in-depth guidance.</p>
+    </a>
+  </div>
+</div></section>
+
+<footer class="site-footer"><p class="copy">© <span id="yr"></span> Jyotish Sarathi</p></footer>
+<script src="assets/js/main.js"></script>
+<script src="assets/js/tools.js"></script>
+<script type="module" src="assets/js/divine-bg.js"></script>
+</body>
+</html>

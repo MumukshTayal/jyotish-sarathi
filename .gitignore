@@ -1,0 +1,26 @@
+# Large generated reports / binaries
+*.pdf
+*.tgz
+*.tar.gz
+*.zip
+
+# Python virtualenv / tooling
+.venv/
+__pycache__/
+*.pyc
+
+# Editor / agent caches
+.qwen/
+.vscode/
+.idea/
+
+# Node
+node_modules/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local secrets (never commit API keys)
+.env
+.dev.vars

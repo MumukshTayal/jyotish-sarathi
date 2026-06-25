@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Muhurat Finder - Jyotish Sarathi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Merriweather:wght@700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/styles.css?v=12"/>
+<style>
+  .mh-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .mh-form-grid .full-span { grid-column: 1 / -1; }
+  .mh-form-grid label { display: flex; flex-direction: column; gap: 5px; font-size: .88rem; color: var(--muted); }
+  .mh-form-grid select, .mh-form-grid input { font-size: .92rem; }
+  select[multiple] { min-height: 100px; }
+  .mh-toggle { display: flex; align-items: center; gap: 10px; font-size: .9rem; color: var(--card-text); cursor: pointer; }
+  .mh-toggle input[type="checkbox"] { width: 18px; height: 18px; accent-color: #e8a860; }
+  .quality-badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: .78rem; font-weight: 600; }
+  .quality-excellent { background: rgba(46,204,113,.2); color: #2ecc71; }
+  .quality-good { background: rgba(52,152,219,.2); color: #3498db; }
+  .quality-fair { background: rgba(241,196,15,.2); color: #f1c40f; }
+  .quality-poor { background: rgba(231,76,60,.2); color: #e74c3c; }
+  .mh-result-card { margin-bottom: 14px; }
+  .mh-day-header { color: #e8a860; font-weight: 700; font-size: 1.05rem; margin: 18px 0 8px; border-bottom: 1px solid rgba(232,168,96,.2); padding-bottom: 6px; }
+  .mh-slot { display: grid; grid-template-columns: 130px 1fr 100px; gap: 10px; align-items: center; padding: 10px 12px; border-radius: 8px; margin-bottom: 6px; background: rgba(14,22,36,.5); }
+  .mh-slot:hover { background: rgba(14,22,36,.8); }
+  .mh-slot-time { font-weight: 600; color: #ffc878; font-size: .95rem; }
+  .mh-slot-details { font-size: .85rem; color: rgba(226,216,204,.75); }
+  .mh-slot-details span { margin-right: 12px; white-space: nowrap; }
+  .mh-progress { text-align: center; padding: 40px; color: var(--muted); }
+  .mh-progress .spinner { display: inline-block; width: 28px; height: 28px; border: 3px solid rgba(232,168,96,.2); border-top-color: #e8a860; border-radius: 50%; animation: mhspin .8s linear infinite; }
+  @keyframes mhspin { to { transform: rotate(360deg); } }
+  .mh-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px,1fr)); gap: 10px; margin-bottom: 20px; }
+  .mh-stat { text-align: center; padding: 14px; background: rgba(14,22,36,.6); border-radius: 10px; }
+  .mh-stat .num { font-size: 1.6rem; font-weight: 800; color: #e8a860; }
+  .mh-stat .lbl { font-size: .78rem; color: var(--muted); margin-top: 4px; }
+  .mh-info-section { margin-top: 40px; }
+  .mh-info-section h3 { color: #e8a860; font-size: 1.1rem; margin: 24px 0 8px; }
+  .mh-info-section p, .mh-info-section li { color: rgba(226,216,204,.7); font-size: .88rem; line-height: 1.7; }
+  .mh-info-section ul { padding-left: 20px; }
+  .mh-purpose-info { padding: 14px; background: rgba(232,168,96,.06); border: 1px solid rgba(232,168,96,.15); border-radius: 10px; margin: 14px 0; }
+  .mh-purpose-info h4 { color: #ffc878; margin: 0 0 6px; font-size: .95rem; }
+  .mh-purpose-info p { font-size: .84rem; margin: 0; }
+  .geo-status { font-size: .78rem; color: rgba(232,168,96,.6); min-height: 16px; margin-top: 2px; }
+  @media(max-width:600px){
+    .mh-form-grid { grid-template-columns: 1fr; }
+    .mh-slot { grid-template-columns: 1fr; gap: 4px; }
+    .mh-summary { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+<canvas id="bgStars" aria-hidden="true"></canvas>
+<div class="aurora-layer" aria-hidden="true"></div>
+<header class="site-header"><div class="container nav-wrap">
+  <a href="index.html" class="logo">🕉 Jyotish<span>Sarathi</span></a>
+  <button class="nav-toggle">☰</button>
+  <nav class="nav">
+    <a href="index.html">Home</a>
+    <a href="tools.html" class="active">Tools</a>
+    <a href="panchang.html">Planets</a>
+    <a href="about.html">About</a>
+    <a href="contact.html">Contact</a>
+  </nav>
+</div></header>
+
+<section class="page-head"><div class="container">
+  <h1>Find Your Muhurat</h1>
+  <p>Search daytime windows across your date range by Tithi, Nakshatra, and Yoga. Each day is split into 8 segments from sunrise to sunset — Rahu Kaal excluded.</p>
+</div></section>
+
+<section class="section"><div class="container" style="max-width:820px">
+
+  <form id="muhuratForm" class="card" style="padding:28px">
+    <div class="mh-form-grid">
+
+      <!-- Purpose -->
+      <label class="full-span">Purpose
+        <select id="mhPurpose">
+          <option value="general">General Auspicious Time</option>
+          <option value="vivah">Vivah (Marriage)</option>
+          <option value="griha_pravesh">Griha Pravesh (Housewarming)</option>
+          <option value="vyapar">Vyapar Arambha (Business Start)</option>
+          <option value="yatra">Yatra (Travel)</option>
+          <option value="namakaran">Namakaran (Naming Ceremony)</option>
+          <option value="vidyarambha">Vidyarambha (Education Start)</option>
+          <option value="vehicle">Vehicle Purchase</option>
+        </select>
+      </label>
+
+      <!-- Date Range -->
+      <label>From Date <input id="mhFrom" type="date" required/></label>
+      <label>To Date <input id="mhTo" type="date" required/></label>
+
+      <!-- Place -->
+      <label class="full-span">Place
+        <input id="mhPlace" type="text" placeholder="City name (e.g. Delhi, Mumbai)"/>
+        <span id="mhGeoStatus" class="geo-status"></span>
+      </label>
+
+      <label>Latitude <input id="mhLat" type="number" step="0.0001" value="28.6139" required/></label>
+      <label>Longitude <input id="mhLon" type="number" step="0.0001" value="77.2090" required/></label>
+      <label>Timezone (UTC offset) <input id="mhTz" type="number" step="0.25" value="5.5" required/></label>
+
+      <!-- Rahu Kaal toggle -->
+      <div class="full-span">
+        <label class="mh-toggle"><input type="checkbox" id="mhRahu" checked/> Exclude Rahu Kaal segments</label>
+      </div>
+
+      <!-- Optional filters -->
+      <label>Allowed Tithis <small style="color:rgba(226,216,204,.45)">(leave blank = all)</small>
+        <select id="mhTithiFilter" multiple></select>
+      </label>
+
+      <label>Allowed Nakshatras <small style="color:rgba(226,216,204,.45)">(leave blank = all)</small>
+        <select id="mhNakFilter" multiple></select>
+      </label>
+
+      <label class="full-span">Allowed Yogas <small style="color:rgba(226,216,204,.45)">(leave blank = all)</small>
+        <select id="mhYogaFilter" multiple></select>
+      </label>
+
+    </div>
+
+    <div id="mhPurposeInfo" class="mh-purpose-info" style="display:none"></div>
+
+    <button class="btn btn-primary" type="submit" style="margin-top:18px;width:100%;padding:14px;font-size:1rem">
+      Find Muhurats →
+    </button>
+  </form>
+
+  <!-- Results -->
+  <div id="muhuratOut" style="margin-top:24px"></div>
+
+  <!-- Educational content -->
+  <div class="mh-info-section card" style="margin-top:30px; padding:24px;">
+    <h3 style="margin-top:0">✦ About This Tool</h3>
+    <p>A Muhurat (मुहूर्त) is a chosen moment — the best window you can find for a particular action. This tool searches every daytime window across your date range, splitting each day's sunrise-to-sunset into 8 equal segments, and evaluates the Panchang (Tithi, Nakshatra, Yoga) at the midpoint of each. Rahu Kaal segments are excluded by default. Results are ranked from best to least auspicious.</p>
+
+    <h3>How It's Calculated</h3>
+    <p>Sunrise and sunset are computed for each day using the Astronomy Engine at your given latitude/longitude. The daytime is split into 8 equal segments. For every segment, the Panchang is evaluated at the midpoint: Tithi (lunar day), Nakshatra (lunar mansion), and Yoga (from Sun+Moon longitude). Your optional filters are applied — only segments matching your allowed Tithis, Nakshatras, and Yogas are returned.</p>
+
+    <h3>Purpose-Specific Rules</h3>
+    <ul>
+      <li><strong>Vivah (Marriage):</strong> Best Nakshatras — Rohini, Mrigashira, Magha, Uttara Phalguni, Hasta, Swati, Anuradha, Uttarashada, Uttara Bhadrapada, Revati. Avoid Bharani, Ardra, Ashlesha, Jyeshtha, Moola. Shukla Paksha preferred. Fridays &amp; Thursdays favoured.</li>
+      <li><strong>Griha Pravesh:</strong> Moon in a fixed sign for stability. Uttara Phalguni, Uttarashada, Uttara Bhadrapada, Rohini, Mrigashira, Anuradha, Hasta preferred. Shukla Paksha strongly preferred. Saturday &amp; Tuesday avoided.</li>
+      <li><strong>Vyapar Arambha (Business):</strong> Pushya Nakshatra is the single most auspicious. Wednesday &amp; Thursday favoured. Guru-Pushya Yoga (Pushya on Thursday) is exceptionally powerful.</li>
+      <li><strong>Yatra (Travel):</strong> Avoid travel during Gandanta zones (Ashlesha-Magha, Jyeshtha-Moola, Revati-Ashwini junctions). Monday, Wednesday, Thursday, Friday are generally favourable for travel.</li>
+      <li><strong>Namakaran:</strong> Avoid Ashtami, Navami, Chaturdashi, and Amavasya. Benefic Nakshatras preferred. Morning hours are ideal.</li>
+      <li><strong>Vidyarambha (Education):</strong> Hasta, Ashwini, Pushya, Punarvasu, Mrigashira, Uttara Phalguni are best. Wednesday is most favourable. Mercury should be direct.</li>
+    </ul>
+
+    <h3>⚠ Limitations — Read Before Acting</h3>
+    <p>A Muhurat computed without reference to the native's personal birth chart is incomplete. This tool provides strong general Muhurat windows — it does not substitute for a personalised reading. The following are <strong>not</strong> computed by this tool: Durmuhurta, Gulika Kaal, Yamagandam, Abhijit Muhurta, Choghadiya, Tara Bala, Graha Yuddha, combustion checks, or personal chart factors. Use results as a shortlist, then verify against your personal chart or consult a trained Jyotishi.</p>
+
+    <h3>Sources</h3>
+    <ul>
+      <li><strong>Muhurta Chintamani</strong> by Rama Daivagnya (c. 17th century) — primary classical text on Muhurta selection criteria.</li>
+      <li><strong>Brihat Samhita</strong> by Varahamihira (c. 550 CE) — auspicious Nakshatras, Rahu Kaal, electional timing principles.</li>
+      <li><strong>Dharmasindhu</strong> by Kashinatha Upadhyaya (1790 CE) — rules for Griha Pravesh, Namakaran, and Upanayana.</li>
+      <li><strong>Nirnaya Sindhu</strong> by Kamalakara Bhatta (1612 CE) — forbidden Tithis and Nakshatras for marriage.</li>
+    </ul>
+  </div>
+
+</div></section>
+
+<footer class="site-footer"><p class="copy">© <span id="yr"></span> Jyotish Sarathi</p></footer>
+<script src="https://cdn.jsdelivr.net/npm/astronomy-engine@2.1.19/astronomy.browser.js"></script>
+<script src="assets/js/ephemeris.js?v=6"></script>
+<script src="assets/js/main.js"></script>
+<script type="module" src="assets/js/divine-bg.js"></script>
+<script>
+(function(){
+  /* ======= CONSTANTS ======= */
+  const TITHI_NAMES = [
+    "Pratipada","Dwitiya","Tritiya","Chaturthi","Panchami","Shashthi","Saptami",
+    "Ashtami","Navami","Dashami","Ekadashi","Dwadashi","Trayodashi","Chaturdashi","Purnima"
+  ];
+  const NAK_NAMES = [
+    "Ashwini","Bharani","Krittika","Rohini","Mrigashira","Ardra","Punarvasu","Pushya",
+    "Ashlesha","Magha","Purva Phalguni","Uttara Phalguni","Hasta","Chitra","Swati",
+    "Vishakha","Anuradha","Jyeshtha","Mula","Purva Ashadha","Uttara Ashadha",
+    "Shravana","Dhanishta","Shatabhisha","Purva Bhadrapada","Uttara Bhadrapada","Revati"
+  ];
+  const YOGA_NAMES = [
+    "Vishkambha","Priti","Ayushman","Saubhagya","Shobhana","Atiganda","Sukarma","Dhriti",
+    "Shoola","Ganda","Vriddhi","Dhruva","Vyaghata","Harshana","Vajra","Siddhi","Vyatipata",
+    "Variyan","Parigha","Shiva","Siddha","Sadhya","Shubha","Shukla","Brahma","Indra","Vaidhriti"
+  ];
+  const VAARA_NAMES = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+
+  // Rahu Kaal: segment index (1-based) per weekday (Sun=0..Sat=6)
+  // Classical: Sun=7th, Mon=1st, Tue=6th, Wed=4th, Thu=5th, Fri=3rd, Sat=2nd
+  const RAHU_SEGMENT = { 0:7, 1:1, 2:6, 3:4, 4:5, 5:3, 6:2 };
+
+  /* ======= PURPOSE-SPECIFIC SCORING RULES ======= */
+  const PURPOSE_RULES = {
+    general: {
+      label: "General Auspicious Time",
+      desc: "Balanced scoring across all Panchang elements. Good for any activity not covered by a specific category.",
+      goodNak: [0,3,4,6,7,11,12,14,16,20,25,26],
+      badNak: [1,5,8,17,18],
+      goodTithi: [1,2,4,5,6,9,10,12],
+      badTithi: [3,7,8,13],
+      goodVaara: [1,3,4,5],
+      badVaara: [0,6],
+      goodYoga: [1,2,3,4,6,7,10,11,13,15,19,20,21,22,23,24,25],
+      badYoga: [5,8,9,12,14,16,18,26],
+      shuklaBonus: true
+    },
+    vivah: {
+      label: "Vivah (Marriage)",
+      desc: "Best Nakshatras: Rohini, Mrigashira, Magha, Uttara Phalguni, Hasta, Swati, Anuradha, Uttarashada, Uttara Bhadrapada, Revati. Shukla Paksha preferred. Friday & Thursday favoured.",
+      goodNak: [3,4,9,11,12,14,16,20,25,26],
+      badNak: [1,2,5,8,17,19,22,23],
+      goodTithi: [1,2,4,5,6,9,10,12],
+      badTithi: [3,7,8,13],
+      goodVaara: [1,3,4,5],
+      badVaara: [0,2,6],
+      goodYoga: [1,2,3,4,6,7,10,11,13,15,19,20,21,22,23,24,25],
+      badYoga: [5,8,9,12,14,16,18,26],
+      shuklaBonus: true
+    },
+    griha_pravesh: {
+      label: "Griha Pravesh (Housewarming)",
+      desc: "Uttara Phalguni, Uttarashada, Uttara Bhadrapada, Rohini, Mrigashira, Anuradha, Hasta preferred. Shukla Paksha strongly preferred. Saturday & Tuesday avoided.",
+      goodNak: [3,4,11,12,16,20,25,26],
+      badNak: [1,5,8,17,18,23],
+      goodTithi: [1,2,4,5,6,9,10,12],
+      badTithi: [3,7,8,13],
+      goodVaara: [1,3,4,5],
+      badVaara: [2,6],
+      goodYoga: [1,2,3,4,6,7,10,11,13,15,19,20,21,22,23,24,25],
+      badYoga: [5,8,9,12,14,16,18,26],
+      shuklaBonus: true
+    },
+    vyapar: {
+      label: "Vyapar Arambha (Business Start)",
+      desc: "Pushya Nakshatra is the single most auspicious. Wednesday & Thursday favoured. Guru-Pushya Yoga (Pushya on Thursday) is exceptionally powerful.",
+      goodNak: [0,3,7,11,12,14,16,20,21,26],
+      badNak: [1,5,8,17,18],
+      goodTithi: [1,2,4,5,6,9,10,12],
+      badTithi: [3,7,8,13],
+      goodVaara: [3,4],
+      badVaara: [0,2,6],
+      goodYoga: [1,2,3,4,6,7,10,11,13,15,19,20,21,22,23,24,25],
+      badYoga: [5,8,9,12,14,16,18,26],
+      shuklaBonus: true,
+      pushyaBonus: true
+    },
+    yatra: {
+      label: "Yatra (Travel)",
+      desc: "Avoid Gandanta zones (Ashlesha-Magha, Jyeshtha-Moola, Revati-Ashwini junctions). Monday, Wednesday, Thursday, Friday generally favourable.",
+      goodNak: [0,3,4,6,7,11,12,14,20,21,26],
+      badNak: [1,5,8,9,17,18],
+      goodTithi: [1,2,4,5,6,9,10,12],
+      badTithi: [3,7,8,13],
+      goodVaara: [1,3,4,5],
+      badVaara: [2,6],
+      goodYoga: [1,2,3,4,6,7,10,11,13,15,19,20,21,22,23,24,25],
+      badYoga: [5,8,9,12,14,16,18,26],
+      shuklaBonus: false
+    },
+    namakaran: {
+      label: "Namakaran (Naming Ceremony)",
+      desc: "Avoid Ashtami, Navami, Chaturdashi, and Amavasya. Benefic Nakshatras preferred. Morning hours ideal.",
+      goodNak: [0,3,4,6,7,11,12,14,16,20,21,25,26],
+      badNak: [1,5,8,17,18],
+      goodTithi: [1,2,4,5,6,9,10,12,14],
+      badTithi: [7,8,13],
+      goodVaara: [1,3,4,5],
+      badVaara: [2,6],
+      goodYoga: [1,2,3,4,6,7,10,11,13,15,19,20,21,22,23,24,25],
+      badYoga: [5,8,9,12,14,16,18,26],
+      shuklaBonus: true,
+      morningBonus: true
+    },
+    vidyarambha: {
+      label: "Vidyarambha (Education Start)",
+      desc: "Hasta, Ashwini, Pushya, Punarvasu, Mrigashira, Uttara Phalguni are best. Wednesday is most favourable.",
+      goodNak: [0,4,6,7,11,12],
+      badNak: [1,5,8,17,18],
+      goodTithi: [1,2,4,5,6,9,10,12],
+      badTithi: [3,7,8,13],
+      goodVaara: [3,4,5],
+      badVaara: [0,2,6],
+      goodYoga: [1,2,3,4,6,7,10,11,13,15,19,20,21,22,23,24,25],
+      badYoga: [5,8,9,12,14,16,18,26],
+      shuklaBonus: true
+    },
+    vehicle: {
+      label: "Vehicle Purchase",
+      desc: "Pushya, Ashwini, Rohini, Uttara Phalguni, Hasta, Shravana are auspicious. Thursday and Friday favoured.",
+      goodNak: [0,3,7,11,12,21,26],
+      badNak: [1,5,8,17,18],
+      goodTithi: [1,2,4,5,6,9,10,12],
+      badTithi: [3,7,8,13],
+      goodVaara: [3,4,5],
+      badVaara: [0,2,6],
+      goodYoga: [1,2,3,4,6,7,10,11,13,15,19,20,21,22,23,24,25],
+      badYoga: [5,8,9,12,14,16,18,26],
+      shuklaBonus: true,
+      pushyaBonus: true
+    }
+  };
+
+  /* ======= HELPERS ======= */
+  function fmtTime(h) {
+    const hh = Math.floor(h);
+    const mm = Math.round((h - hh) * 60);
+    const ampm = hh >= 12 ? 'PM' : 'AM';
+    const h12 = hh === 0 ? 12 : hh > 12 ? hh - 12 : hh;
+    return `${h12}:${String(mm).padStart(2,'0')} ${ampm}`;
+  }
+
+  function addDays(dateStr, n) {
+    const d = new Date(dateStr + 'T12:00:00');
+    d.setDate(d.getDate() + n);
+    return d.toISOString().slice(0,10);
+  }
+
+  function dateDiffDays(from, to) {
+    return Math.round((new Date(to+'T12:00:00') - new Date(from+'T12:00:00')) / 86400000);
+  }
+
+  function getSunriseSet(dateStr, lat, lon, tz) {
+    const d = new Date(dateStr + 'T12:00:00Z');
+    try {
+      const obs = new Astronomy.Observer(lat, lon, 0);
+      const rise = Astronomy.SearchRiseSet('Sun', obs, +1, d, 1);
+      const set  = Astronomy.SearchRiseSet('Sun', obs, -1, d, 1);
+      if (rise && set) {
+        const riseLocal = rise.date.getUTCHours() + rise.date.getUTCMinutes()/60 + tz;
+        const setLocal  = set.date.getUTCHours()  + set.date.getUTCMinutes()/60  + tz;
+        return { sunrise: riseLocal, sunset: setLocal };
+      }
+    } catch(e) {}
+    return { sunrise: 6.0, sunset: 18.5 };
+  }
+
+  function getNakshatraIdx(moonLon) {
+    return Math.floor(moonLon / (360/27));
+  }
+
+  /* ======= SCORING ======= */
+  function scoreSlot(panchang, nakIdx, rules, segIdx, weekday) {
+    let score = 50;
+    const tIdx = panchang.tithiNumIdx;
+    if (rules.goodTithi.includes(tIdx)) score += 15;
+    if (rules.badTithi.includes(tIdx)) score -= 25;
+    if (panchang.isAmavasya) score -= 20;
+    if (rules.shuklaBonus && panchang.pakshaKey === 'Shukla') score += 10;
+    if (rules.shuklaBonus && panchang.pakshaKey === 'Krishna') score -= 5;
+    if (rules.goodNak.includes(nakIdx)) score += 20;
+    if (rules.badNak.includes(nakIdx)) score -= 25;
+    if (rules.pushyaBonus && nakIdx === 7) {
+      score += 15;
+      if (weekday === 4) score += 20;
+    }
+    const yIdx = panchang.yogaIdx;
+    if (rules.goodYoga.includes(yIdx)) score += 10;
+    if (rules.badYoga.includes(yIdx)) score -= 15;
+    if (rules.goodVaara.includes(weekday)) score += 10;
+    if (rules.badVaara.includes(weekday)) score -= 10;
+    if (rules.morningBonus && segIdx < 3) score += 8;
+    return Math.max(0, Math.min(100, score));
+  }
+
+  function qualityLabel(score) {
+    if (score >= 75) return { text: 'Excellent', cls: 'quality-excellent' };
+    if (score >= 60) return { text: 'Good', cls: 'quality-good' };
+    if (score >= 45) return { text: 'Fair', cls: 'quality-fair' };
+    return { text: 'Poor', cls: 'quality-poor' };
+  }
+
+  /* ======= POPULATE FILTERS ======= */
+  function populateFilters() {
+    const tSel = document.getElementById('mhTithiFilter');
+    const nSel = document.getElementById('mhNakFilter');
+    const ySel = document.getElementById('mhYogaFilter');
+
+    ['Shukla','Krishna'].forEach(p => {
+      TITHI_NAMES.forEach((t, i) => {
+        const opt = document.createElement('option');
+        opt.value = p + '_' + i;
+        opt.textContent = p + ' ' + t;
+        tSel.appendChild(opt);
+      });
+    });
+    const amOpt = document.createElement('option');
+    amOpt.value = 'amavasya';
+    amOpt.textContent = 'Amavasya';
+    tSel.appendChild(amOpt);
+
+    NAK_NAMES.forEach((n, i) => {
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = n;
+      nSel.appendChild(opt);
+    });
+
+    YOGA_NAMES.forEach((y, i) => {
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = y;
+      ySel.appendChild(opt);
+    });
+  }
+
+  /* ======= PURPOSE INFO DISPLAY ======= */
+  function showPurposeInfo(purposeKey) {
+    const info = document.getElementById('mhPurposeInfo');
+    const rules = PURPOSE_RULES[purposeKey];
+    if (!rules || purposeKey === 'general') {
+      info.style.display = 'none';
+      return;
+    }
+    info.style.display = 'block';
+    info.innerHTML = '<h4>✦ ' + rules.label + '</h4><p>' + rules.desc + '</p>';
+  }
+
+  /* ======= MAIN COMPUTATION ======= */
+  function findMuhurats(fromDate, toDate, lat, lon, tz, purposeKey, excludeRahu, tithiFilter, nakFilter, yogaFilter) {
+    const rules = PURPOSE_RULES[purposeKey] || PURPOSE_RULES.general;
+    const days = dateDiffDays(fromDate, toDate);
+    const allSlots = [];
+
+    for (let d = 0; d <= days; d++) {
+      const dateStr = addDays(fromDate, d);
+      const weekday = new Date(dateStr + 'T12:00:00').getDay();
+      const { sunrise, sunset } = getSunriseSet(dateStr, lat, lon, tz);
+      const dayLen = sunset - sunrise;
+      const segLen = dayLen / 8;
+      const rahuSeg = RAHU_SEGMENT[weekday];
+
+      for (let seg = 0; seg < 8; seg++) {
+        if (excludeRahu && seg === (rahuSeg - 1)) continue;
+
+        const segStart = sunrise + seg * segLen;
+        const segEnd = segStart + segLen;
+        const midpoint = (segStart + segEnd) / 2;
+
+        const timeStr = String(Math.floor(midpoint)).padStart(2,'0') + ':' + String(Math.round((midpoint % 1) * 60)).padStart(2,'0');
+        var res;
+        try {
+          res = computePositions(dateStr, timeStr, tz, lat, lon, 'lahiri', 'Muhurat');
+        } catch(e) { continue; }
+        if (!res || !res.panchang) continue;
+
+        const panchang = res.panchang;
+        const moonRow = res.rows.find(function(r){ return r.planet === 'Moon'; });
+        const nakIdx = moonRow ? getNakshatraIdx(moonRow.sidereal) : 0;
+        const tithiName = panchang.isAmavasya ? 'Amavasya' : panchang.pakshaKey + ' ' + TITHI_NAMES[panchang.tithiNumIdx];
+        const yogaName = YOGA_NAMES[panchang.yogaIdx] || '';
+
+        // Apply user filters
+        if (tithiFilter.length > 0) {
+          const tKey = panchang.isAmavasya ? 'amavasya' : panchang.pakshaKey + '_' + panchang.tithiNumIdx;
+          if (!tithiFilter.includes(tKey)) continue;
+        }
+        if (nakFilter.length > 0 && !nakFilter.includes(nakIdx)) continue;
+        if (yogaFilter.length > 0 && !yogaFilter.includes(panchang.yogaIdx)) continue;
+
+        const score = scoreSlot(panchang, nakIdx, rules, seg, weekday);
+
+        allSlots.push({
+          date: dateStr,
+          weekday: weekday,
+          segIdx: seg,
+          startTime: segStart,
+          endTime: segEnd,
+          tithiName: tithiName,
+          nakName: NAK_NAMES[nakIdx] || '',
+          yogaName: yogaName,
+          score: score
+        });
+      }
+    }
+
+    allSlots.sort(function(a, b){ return b.score - a.score || a.date.localeCompare(b.date); });
+    return allSlots;
+  }
+
+  /* ======= RENDER RESULTS ======= */
+  function renderResults(slots, purposeKey) {
+    var out = document.getElementById('muhuratOut');
+    if (slots.length === 0) {
+      out.innerHTML = '<div class="card" style="text-align:center;padding:30px;">' +
+        '<h3 style="color:#e8a860">No Muhurat Windows Found</h3>' +
+        '<p>Try expanding your date range, loosening your Tithi/Nakshatra/Yoga filters, or changing the purpose.</p></div>';
+      return;
+    }
+
+    var excellent = slots.filter(function(s){ return s.score >= 75; }).length;
+    var good = slots.filter(function(s){ return s.score >= 60 && s.score < 75; }).length;
+    var fair = slots.filter(function(s){ return s.score >= 45 && s.score < 60; }).length;
+    var total = slots.length;
+
+    var html = '<div class="mh-summary">' +
+      '<div class="mh-stat"><div class="num">' + total + '</div><div class="lbl">Windows Found</div></div>' +
+      '<div class="mh-stat"><div class="num">' + excellent + '</div><div class="lbl">Excellent</div></div>' +
+      '<div class="mh-stat"><div class="num">' + good + '</div><div class="lbl">Good</div></div>' +
+      '<div class="mh-stat"><div class="num">' + fair + '</div><div class="lbl">Fair</div></div></div>';
+
+    var top = slots.slice(0, 50);
+    var byDate = {};
+    top.forEach(function(s) {
+      if (!byDate[s.date]) byDate[s.date] = [];
+      byDate[s.date].push(s);
+    });
+
+    var label = (PURPOSE_RULES[purposeKey] || {}).label || 'General';
+    html += '<div class="card mh-result-card" style="padding:20px">' +
+      '<h3>Recommended Muhurat Windows</h3>' +
+      '<p style="margin-bottom:14px">Ranked by composite Panchang score for <strong>' + label + '</strong>. Top ' + Math.min(50, total) + ' of ' + total + ' windows shown.</p>';
+
+    var dates = Object.keys(byDate).sort();
+    dates.forEach(function(date) {
+      var d = new Date(date + 'T12:00:00');
+      var dayName = VAARA_NAMES[d.getDay()];
+      var fmtDate = d.toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' });
+      html += '<div class="mh-day-header">' + dayName + ', ' + fmtDate + '</div>';
+      byDate[date].forEach(function(s) {
+        var q = qualityLabel(s.score);
+        html += '<div class="mh-slot">' +
+          '<div class="mh-slot-time">' + fmtTime(s.startTime) + ' – ' + fmtTime(s.endTime) + '</div>' +
+          '<div class="mh-slot-details">' +
+            '<span>☽ ' + s.tithiName + '</span>' +
+            '<span>✦ ' + s.nakName + '</span>' +
+            '<span>☸ ' + s.yogaName + '</span>' +
+          '</div>' +
+          '<div><span class="quality-badge ' + q.cls + '">' + q.text + ' (' + s.score + ')</span></div>' +
+        '</div>';
+      });
+    });
+
+    html += '</div>';
+    out.innerHTML = html;
+    out.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  /* ======= INIT ======= */
+  document.addEventListener('DOMContentLoaded', function() {
+    populateFilters();
+
+    var today = todayISO();
+    document.getElementById('mhFrom').value = today;
+    document.getElementById('mhTo').value = addDays(today, 30);
+
+    if (typeof setupBidirectionalGeo === 'function') {
+      setupBidirectionalGeo('mhPlace', 'mhLat', 'mhLon', 'mhGeoStatus');
+    }
+
+    if (typeof fillFromUrlParams === 'function') {
+      fillFromUrlParams({ city: 'mhPlace', lat: 'mhLat', lon: 'mhLon' });
+    }
+
+    var purposeSel = document.getElementById('mhPurpose');
+    purposeSel.addEventListener('change', function() { showPurposeInfo(purposeSel.value); });
+
+    document.getElementById('muhuratForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      var out = document.getElementById('muhuratOut');
+
+      if (typeof computePositions !== 'function') {
+        out.innerHTML = '<div class="card" style="color:#a8420d;padding:20px">Astronomy engine not loaded. Please refresh.</div>';
+        return;
+      }
+
+      var fromDate = document.getElementById('mhFrom').value;
+      var toDate = document.getElementById('mhTo').value;
+      var lat = parseFloat(document.getElementById('mhLat').value);
+      var lon = parseFloat(document.getElementById('mhLon').value);
+      var tz = parseFloat(document.getElementById('mhTz').value);
+      var purpose = purposeSel.value;
+      var excludeRahu = document.getElementById('mhRahu').checked;
+
+      var days = dateDiffDays(fromDate, toDate);
+      if (days < 0) {
+        out.innerHTML = '<div class="card" style="color:#a8420d;padding:20px">"To Date" must be after "From Date".</div>';
+        return;
+      }
+      if (days > 90) {
+        out.innerHTML = '<div class="card" style="color:#a8420d;padding:20px">Maximum range is 90 days. Please narrow your search.</div>';
+        return;
+      }
+
+      var tithiSel = document.getElementById('mhTithiFilter');
+      var nakSel = document.getElementById('mhNakFilter');
+      var yogaSel = document.getElementById('mhYogaFilter');
+      var tithiFilter = Array.from(tithiSel.selectedOptions).map(function(o){ return o.value; });
+      var nakFilter = Array.from(nakSel.selectedOptions).map(function(o){ return parseInt(o.value); });
+      var yogaFilter = Array.from(yogaSel.selectedOptions).map(function(o){ return parseInt(o.value); });
+
+      out.innerHTML = '<div class="mh-progress"><div class="spinner"></div><p>Scanning ' + (days + 1) + ' days × 8 segments…</p></div>';
+
+      setTimeout(function() {
+        var slots = findMuhurats(fromDate, toDate, lat, lon, tz, purpose, excludeRahu, tithiFilter, nakFilter, yogaFilter);
+        renderResults(slots, purpose);
+      }, 50);
+    });
+
+    var yr = document.getElementById('yr');
+    if (yr) yr.textContent = new Date().getFullYear();
+  });
+})();
+</script>
+</body>
+</html>
