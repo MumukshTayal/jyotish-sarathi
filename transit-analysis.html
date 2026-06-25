@@ -16,7 +16,13 @@
   .tool-list { margin:10px 0 0; padding-left:20px; }
   .tool-list li { font-size:.88rem; color:rgba(226,216,204,.8); line-height:1.7; }
   .ai-box { margin-top:16px; }
-  .ai-output { white-space:pre-wrap; font-size:.9rem; line-height:1.7; color:rgba(226,216,204,.85); }
+  .ai-output { font-size:.92rem; line-height:1.7; color:rgba(226,216,204,.88); }
+  .ai-output h4, .ai-output h5, .ai-output h6 { color:#ffc878; margin:16px 0 6px; font-size:1rem; }
+  .ai-output p { margin:0 0 10px; }
+  .ai-output ul, .ai-output ol { margin:6px 0 12px; padding-left:22px; }
+  .ai-output li { margin:3px 0; }
+  .ai-output strong { color:#ffe0b0; }
+  .ai-output code { background:rgba(232,168,96,.12); padding:1px 5px; border-radius:4px; font-size:.85em; }
   .ai-spinner { display:inline-block; width:20px; height:20px; border:3px solid rgba(232,168,96,.2); border-top-color:#e8a860; border-radius:50%; animation:aispin .8s linear infinite; vertical-align:middle; }
   @keyframes aispin { to { transform:rotate(360deg); } }
   @media(max-width:600px){ .tool-form-grid { grid-template-columns:1fr; } }
@@ -132,7 +138,7 @@
         ' and transit Jupiter is in ' + (jup ? jup.sign : '?') +
         '. Explain in simple language what these transits (including any Sade Sati or Jupiter blessings) mean for the person right now, with practical advice. Keep it concise.';
       var text = await window.askJyotishAI(prompt, 'You are an expert Vedic astrologer specialising in transit (gochar) analysis.');
-      aiOut.textContent = text;
+      aiOut.innerHTML = window.formatAIHtml(text);
     } catch (err) {
       aiOut.textContent = err.message || 'AI request failed.';
     }
