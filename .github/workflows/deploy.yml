@@ -1,0 +1,34 @@
+name: Deploy to Cloudflare Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare static site (exclude worker + non-site files)
+        run: |
+          mkdir -p _site
+          # Copy everything tracked, then drop things that should not be served.
+          rsync -a --exclude='.git' \
+                   --exclude='_site' \
+                   --exclude='cloudflare-worker' \
+                   --exclude='.github' \
+                   --exclude='README.md' \
+                   ./ _site/
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy _site --project-name=jyotish-sarathi --branch=main

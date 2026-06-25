@@ -43,6 +43,14 @@
   .mh-purpose-info h4 { color: #ffc878; margin: 0 0 6px; font-size: .95rem; }
   .mh-purpose-info p { font-size: .84rem; margin: 0; }
   .geo-status { font-size: .78rem; color: rgba(232,168,96,.6); min-height: 16px; margin-top: 2px; }
+  .ai-output { font-size:.92rem; line-height:1.7; color:rgba(226,216,204,.88); }
+  .ai-output h4, .ai-output h5, .ai-output h6 { color:#ffc878; margin:16px 0 6px; font-size:1rem; }
+  .ai-output p { margin:0 0 10px; }
+  .ai-output ul, .ai-output ol { margin:6px 0 12px; padding-left:22px; }
+  .ai-output li { margin:3px 0; }
+  .ai-output strong { color:#ffe0b0; }
+  .ai-output code { background:rgba(232,168,96,.12); padding:1px 5px; border-radius:4px; font-size:.85em; }
+  .ai-spinner { display:inline-block; width:20px; height:20px; border:3px solid rgba(232,168,96,.2); border-top-color:#e8a860; border-radius:50%; animation:mhspin .8s linear infinite; vertical-align:middle; }
   @media(max-width:600px){
     .mh-form-grid { grid-template-columns: 1fr; }
     .mh-slot { grid-template-columns: 1fr; gap: 4px; }
@@ -133,6 +141,15 @@
   <!-- Results -->
   <div id="muhuratOut" style="margin-top:24px"></div>
 
+  <!-- AI insight -->
+  <div id="mhAiBox" class="ai-box card" style="padding:22px; margin-top:16px; display:none">
+    <h3>AI Muhurat Guidance</h3>
+    <p style="font-size:.85rem; color:var(--muted)">A practical explanation of your best windows — why they are auspicious and how to use them for your chosen purpose.</p>
+    <button id="mhAiBtn" class="btn btn-outline" type="button">Generate AI Guidance</button>
+    <div id="mhAiOut" class="ai-output" style="margin-top:14px"></div>
+    <p style="font-size:.75rem; color:var(--muted); margin-top:14px">AI guidance is for reflection and education, not a substitute for professional consultation.</p>
+  </div>
+
   <!-- Educational content -->
   <div class="mh-info-section card" style="margin-top:30px; padding:24px;">
     <h3 style="margin-top:0">✦ About This Tool</h3>
@@ -169,6 +186,7 @@
 <script src="https://cdn.jsdelivr.net/npm/astronomy-engine@2.1.19/astronomy.browser.js"></script>
 <script src="assets/js/ephemeris.js?v=6"></script>
 <script src="assets/js/main.js"></script>
+<script src="assets/js/ai.js"></script>
 <script type="module" src="assets/js/divine-bg.js"></script>
 <script>
 (function(){
@@ -538,6 +556,22 @@
     html += '</div>';
     out.innerHTML = html;
     out.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    // Store top windows for AI guidance and reveal the AI box.
+    window.__lastMuhurat = {
+      label: label,
+      windows: top.slice(0, 8).map(function(s){
+        var d = new Date(s.date + 'T12:00:00');
+        return {
+          date: s.date,
+          day: VAARA_NAMES[d.getDay()],
+          time: fmtTime(s.startTime) + '–' + fmtTime(s.endTime),
+          tithi: s.tithiName, nak: s.nakName, yoga: s.yogaName, score: s.score
+        };
+      })
+    };
+    var aiBox = document.getElementById('mhAiBox');
+    if (aiBox) { aiBox.style.display = 'block'; document.getElementById('mhAiOut').innerHTML = ''; }
   }
 
   /* ======= INIT ======= */
@@ -603,6 +637,30 @@
 
     var yr = document.getElementById('yr');
     if (yr) yr.textContent = new Date().getFullYear();
+
+    var mhAiBtn = document.getElementById('mhAiBtn');
+    if (mhAiBtn) {
+      mhAiBtn.addEventListener('click', async function() {
+        var aiOut = document.getElementById('mhAiOut');
+        var data = window.__lastMuhurat;
+        if (!data || !data.windows || !data.windows.length) {
+          aiOut.textContent = 'Please find muhurat windows first.';
+          return;
+        }
+        aiOut.innerHTML = '<span class="ai-spinner"></span> Reviewing the windows…';
+        try {
+          var list = data.windows.map(function(w) {
+            return w.day + ' ' + w.date + ', ' + w.time + ' — Tithi ' + w.tithi + ', Nakshatra ' + w.nak + ', Yoga ' + w.yoga + ' (score ' + w.score + ')';
+          }).join('\n');
+          var prompt = 'Purpose: ' + data.label + '.\nTop auspicious muhurat windows found:\n' + list +
+            '\n\nIn simple language, explain why these windows are favourable for this purpose, which one or two are the strongest and why, and give practical do\'s and don\'ts for the chosen activity. Keep it concise and structured.';
+          var text = await window.askJyotishAI(prompt, 'You are an expert Vedic astrologer specialising in Muhurta (electional astrology).');
+          aiOut.innerHTML = window.formatAIHtml(text);
+        } catch (err) {
+          aiOut.textContent = err.message || 'AI request failed.';
+        }
+      });
+    }
   });
 })();
 </script>

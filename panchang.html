@@ -8,6 +8,18 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Merriweather:wght@700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/styles.css?v=10"/>
+<style>
+  .ai-box { margin-top:18px; }
+  .ai-output { font-size:.92rem; line-height:1.7; color:rgba(226,216,204,.88); }
+  .ai-output h4, .ai-output h5, .ai-output h6 { color:#ffc878; margin:16px 0 6px; font-size:1rem; }
+  .ai-output p { margin:0 0 10px; }
+  .ai-output ul, .ai-output ol { margin:6px 0 12px; padding-left:22px; }
+  .ai-output li { margin:3px 0; }
+  .ai-output strong { color:#ffe0b0; }
+  .ai-output code { background:rgba(232,168,96,.12); padding:1px 5px; border-radius:4px; font-size:.85em; }
+  .ai-spinner { display:inline-block; width:20px; height:20px; border:3px solid rgba(232,168,96,.2); border-top-color:#e8a860; border-radius:50%; animation:aispin .8s linear infinite; vertical-align:middle; }
+  @keyframes aispin { to { transform:rotate(360deg); } }
+</style>
 </head>
 <body>
 <canvas id="bgStars" aria-hidden="true"></canvas>
@@ -67,6 +79,14 @@
 
   <div id="ephResult" style="margin-top:36px"></div>
 
+  <div id="kdAiBox" class="ai-box card" style="padding:22px; display:none; max-width:760px; margin-left:auto; margin-right:auto">
+    <h3>AI Chart Reading</h3>
+    <p style="font-size:.85rem; color:var(--muted)">A personalised summary of this birth chart — personality, strengths, career and life themes based on Lagna, Moon sign and current Mahadasha.</p>
+    <button id="kdAiBtn" class="btn btn-outline" type="button">Generate AI Reading</button>
+    <div id="kdAiOut" class="ai-output" style="margin-top:14px"></div>
+    <p style="font-size:.75rem; color:var(--muted); margin-top:14px">AI guidance is for reflection and education, not a substitute for professional consultation.</p>
+  </div>
+
   <p class="muted small-text" style="max-width:720px;margin:24px auto 0;text-align:center">
     Computed using Astronomy Engine (geocentric, IAU 2000) with Lahiri ayanamsa.
     Rahu/Ketu use the Mean Node. Results match standard Indian ephemeris within
@@ -82,6 +102,7 @@
 <script src="assets/js/ephemeris.js?v=6"
         onerror="window.__ephError=true"></script>
 <script src="assets/js/main.js"></script>
+<script src="assets/js/ai.js"></script>
 
 <script>
 window.addEventListener('DOMContentLoaded', () => {
@@ -98,6 +119,51 @@ window.addEventListener('DOMContentLoaded', () => {
       setKundliLang(btn.dataset.lang);
       if (window.__rerenderKundli) window.__rerenderKundli();
     });
+  });
+
+  // Reveal AI box once a chart has been calculated.
+  const aiBox = document.getElementById('kdAiBox');
+  const ephForm = document.getElementById('ephForm');
+  if (ephForm) {
+    ephForm.addEventListener('submit', () => {
+      setTimeout(() => {
+        if (window.__getKundliResult && window.__getKundliResult()) {
+          aiBox.style.display = 'block';
+          document.getElementById('kdAiOut').innerHTML = '';
+        }
+      }, 120);
+    });
+  }
+
+  const SIGN_NAMES = ['Mesha','Vrishabha','Mithuna','Karka','Simha','Kanya','Tula','Vrishchika','Dhanu','Makara','Kumbha','Meena'];
+  document.getElementById('kdAiBtn').addEventListener('click', async () => {
+    const out = document.getElementById('kdAiOut');
+    const result = window.__getKundliResult && window.__getKundliResult();
+    if (!result) { out.textContent = 'Please calculate a chart first.'; return; }
+    out.innerHTML = '<span class="ai-spinner"></span> Reading the chart…';
+    try {
+      const lagna = result.rows.find(r => r.planet.startsWith('Lagna'));
+      const moon = result.rows.find(r => r.planet === 'Moon');
+      const sun = result.rows.find(r => r.planet === 'Sun');
+      const placements = result.rows
+        .filter(r => !r.planet.startsWith('Lagna'))
+        .map(r => `${r.planet} in ${r.sign} (${r.nakshatra})${r.retro ? ' retrograde' : ''}`)
+        .join(', ');
+      const dasha = result.dasha && result.dasha.startLord
+        ? `Current Mahadasha lord: ${result.dasha.startLord}.`
+        : '';
+      const name = result.userName ? `The native's name is ${result.userName}. ` : '';
+      const prompt = `${name}Vedic birth chart (Lahiri ayanamsa):\n` +
+        `Lagna (Ascendant): ${lagna ? lagna.sign : '?'}\n` +
+        `Moon sign (Rashi): ${moon ? moon.sign : '?'} in ${moon ? moon.nakshatra : '?'} nakshatra\n` +
+        `Sun sign: ${sun ? sun.sign : '?'}\n` +
+        `Planetary placements: ${placements}\n${dasha}\n\n` +
+        `Give a practical, encouraging personality and life reading: core nature, strengths, career direction, relationships, and 2-3 actionable suggestions. Keep it structured and concise.`;
+      const text = await window.askJyotishAI(prompt, 'You are an expert Vedic astrologer giving a warm, practical natal chart reading.');
+      out.innerHTML = window.formatAIHtml(text);
+    } catch (err) {
+      out.textContent = err.message || 'AI request failed.';
+    }
   });
 });
 </script>

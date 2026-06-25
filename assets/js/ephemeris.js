@@ -1245,6 +1245,7 @@ document.addEventListener('DOMContentLoaded', () => {
   window.__rerenderKundli = () => {
     if (lastResult) renderEphemeris(lastResult, document.getElementById('ephResult'));
   };
+  window.__getKundliResult = () => lastResult;
   window.__buildPrintableHtml = () => {
     if (!lastResult) return null;
     const ganeshImageUrl = new URL('assets/img/shri_ganesh_clean.png', window.location.href).href;
