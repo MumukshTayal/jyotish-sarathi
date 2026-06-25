@@ -50,7 +50,10 @@ export default {
           { role: 'user', content: prompt },
         ],
         temperature: 0.7,
-        max_tokens: 1500,
+        max_tokens: 4000,
+        // Disable chain-of-thought so tokens go to the actual answer, not hidden
+        // reasoning (which previously consumed the whole budget and returned empty).
+        reasoning_effort: 'none',
         reasoning_format: 'hidden',
       }),
     });
@@ -61,8 +64,10 @@ export default {
     }
 
     const data = await groqRes.json();
-    let text = data?.choices?.[0]?.message?.content || '';
-    // Strip reasoning model <think>...</think> blocks.
+    const msg = data?.choices?.[0]?.message || {};
+    // Prefer the answer; fall back to the reasoning field if content is empty.
+    let text = (msg.content || msg.reasoning || '').toString();
+    // Strip any <think>...</think> blocks the model may still emit inline.
     text = text.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
     return json({ text }, 200, cors);
   },
