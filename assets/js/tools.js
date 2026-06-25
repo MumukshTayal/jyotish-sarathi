@@ -418,9 +418,9 @@
     const form = byId('matchingForm');
     if (!form) return;
 
-    // Bidirectional geo for both partners
-    const geoA = setupBidirectionalGeo('aCity', 'aLat', 'aLon', 'aGeoStatus');
-    setupBidirectionalGeo('bCity', 'bLat', 'bLon', 'bGeoStatus');
+    // Bidirectional geo for both partners (auto-fills timezone too)
+    const geoA = setupBidirectionalGeo('aCity', 'aLat', 'aLon', 'aGeoStatus', 'aTz', 'aDate', 'aTime');
+    setupBidirectionalGeo('bCity', 'bLat', 'bLon', 'bGeoStatus', 'bTz', 'bDate', 'bTime');
 
     // Fill Partner A from URL params (from Quick Start)
     const filled = fillFromUrlParams({ d: 'aDate', t: 'aTime', city: 'aCity' });
@@ -448,7 +448,7 @@
     const form = byId('yogaDoshaForm');
     if (!form) return;
 
-    const geo = setupBidirectionalGeo('ydCity', 'ydLat', 'ydLon', 'ydGeoStatus');
+    const geo = setupBidirectionalGeo('ydCity', 'ydLat', 'ydLon', 'ydGeoStatus', 'ydTz', 'ydDate', 'ydTime');
 
     // Fill from URL params (from Quick Start)
     const filled = fillFromUrlParams({ d: 'ydDate', t: 'ydTime', city: 'ydCity' });
@@ -473,7 +473,7 @@
     const form = byId('transitForm');
     if (!form) return;
 
-    const geo = setupBidirectionalGeo('trCity', 'trLat', 'trLon', 'trGeoStatus');
+    const geo = setupBidirectionalGeo('trCity', 'trLat', 'trLon', 'trGeoStatus', 'trTz', 'trDate', 'trTime');
 
     // Fill from URL params (from Quick Start)
     const filled = fillFromUrlParams({ d: 'trDate', t: 'trTime', city: 'trCity' });
@@ -525,4 +525,8 @@
     bindTransit();
     bindToolFinder();
   });
+
+  // Expose engine helpers so per-page scripts (e.g. AI insight buttons) can use them.
+  window.detectYogaDosha = detectYogaDosha;
+  window.transitInsight = transitInsight;
 })();

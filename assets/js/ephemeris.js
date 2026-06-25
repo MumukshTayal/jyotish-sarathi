@@ -1251,9 +1251,9 @@ document.addEventListener('DOMContentLoaded', () => {
     return buildPrintableHtml(lastResult, ganeshImageUrl);
   };
 
-  // Set up bidirectional city <-> coords sync
+  // Set up bidirectional city <-> coords sync (auto-fills timezone too)
   if (typeof setupBidirectionalGeo === 'function') {
-    setupBidirectionalGeo('ephPlace', 'ephLat', 'ephLon', 'geoStatus');
+    setupBidirectionalGeo('ephPlace', 'ephLat', 'ephLon', 'geoStatus', 'ephTz', 'ephDate', 'ephTime');
   } else if (placeInput) {
     placeInput.addEventListener('blur', () => { resolveCityAndPopulate(); });
     placeInput.addEventListener('keydown', (evt) => {

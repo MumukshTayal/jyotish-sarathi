@@ -40,7 +40,7 @@ async function reverseGeocode(lat, lon) {
 }
 window.reverseGeocode = reverseGeocode;
 
-// --- Forward geocode: city -> lat/lon ---
+// --- Forward geocode: city -> lat/lon (+ IANA timezone) ---
 async function forwardGeocode(city) {
   if (!city || !city.trim()) return null;
   try {
@@ -49,7 +49,7 @@ async function forwardGeocode(city) {
       const d = await r.json();
       if (d.results && d.results[0]) {
         const g = d.results[0];
-        return { lat: g.latitude, lon: g.longitude, label: (g.name||'') + ', ' + (g.country||'') };
+        return { lat: g.latitude, lon: g.longitude, label: (g.name||'') + ', ' + (g.country||''), timeZone: g.timezone || null };
       }
     }
   } catch(_){}
@@ -57,19 +57,55 @@ async function forwardGeocode(city) {
 }
 window.forwardGeocode = forwardGeocode;
 
-// --- Bidirectional city <-> coordinates sync ---
-function setupBidirectionalGeo(cityId, latId, lonId, statusId) {
+// --- IANA timezone name -> UTC offset in hours for a given local date/time (DST-aware) ---
+function ianaOffsetHours(timeZone, dateStr, timeStr) {
+  if (!timeZone) return null;
+  const now = new Date();
+  let y = now.getFullYear(), mo = now.getMonth() + 1, d = now.getDate(), hh = 12, mm = 0;
+  if (dateStr) { const p = dateStr.split('-').map(Number); if (p.length === 3) { y = p[0]; mo = p[1]; d = p[2]; } }
+  if (timeStr) { const p = timeStr.split(':').map(Number); if (p.length >= 2) { hh = p[0]; mm = p[1]; } }
+  if (![y, mo, d, hh, mm].every(Number.isFinite)) return null;
+  try {
+    const probeUtc = new Date(Date.UTC(y, mo - 1, d, hh, mm, 0));
+    const fmt = new Intl.DateTimeFormat('en-CA', {
+      timeZone, year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+    });
+    const parts = fmt.formatToParts(probeUtc);
+    const val = (t) => Number(parts.find(p => p.type === t)?.value);
+    const tzAsUtc = Date.UTC(val('year'), val('month') - 1, val('day'), val('hour'), val('minute'), val('second'));
+    const off = (tzAsUtc - probeUtc.getTime()) / 3600000;
+    return Number.isFinite(off) ? Math.round(off * 100) / 100 : null;
+  } catch (_) { return null; }
+}
+window.ianaOffsetHours = ianaOffsetHours;
+
+// --- Bidirectional city <-> coordinates sync (optionally auto-fills timezone) ---
+function setupBidirectionalGeo(cityId, latId, lonId, statusId, tzId, dateId, timeId) {
   const cityEl = document.getElementById(cityId);
   const latEl = document.getElementById(latId);
   const lonEl = document.getElementById(lonId);
   const statusEl = statusId ? document.getElementById(statusId) : null;
+  const tzEl = tzId ? document.getElementById(tzId) : null;
   if (!cityEl || !latEl || !lonEl) return;
 
   let lastSource = null; // 'city' or 'coords'
 
   function setStatus(msg) { if (statusEl) statusEl.textContent = msg; }
 
-  // City changed -> update coords
+  function applyTimezone(timeZone) {
+    if (!tzEl || !timeZone) return null;
+    const dateStr = dateId ? (document.getElementById(dateId)?.value || '') : '';
+    const timeStr = timeId ? (document.getElementById(timeId)?.value || '') : '';
+    const off = ianaOffsetHours(timeZone, dateStr, timeStr);
+    if (Number.isFinite(off)) {
+      tzEl.value = off;
+      return off;
+    }
+    return null;
+  }
+
+  // City changed -> update coords (+ timezone)
   async function onCityChange() {
     const city = cityEl.value.trim();
     if (!city) return;
@@ -79,7 +115,9 @@ function setupBidirectionalGeo(cityId, latId, lonId, statusId) {
     if (g && lastSource === 'city') {
       latEl.value = g.lat.toFixed(4);
       lonEl.value = g.lon.toFixed(4);
-      setStatus('Using ' + g.label);
+      const off = applyTimezone(g.timeZone);
+      const tzNote = (off !== null && off !== undefined) ? ` (UTC${off >= 0 ? '+' : ''}${off})` : '';
+      setStatus('Using ' + g.label + tzNote);
     } else if (lastSource === 'city') {
       setStatus('City not found');
     }
